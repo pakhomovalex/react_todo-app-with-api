@@ -73,10 +73,20 @@ export const App: React.FC = () => {
   });
 
   const activeTodos = todos.filter(todo => !todo.completed);
-  const completedTodos = todos.filter(todo => todo.completed);
+  const completedTodos = () => {
+    if (todos.find(todo => todo.completed)) {
+      return false;
+    }
 
-  function findActiveTodo() {
-    return todos.find(todo => !todo.completed) || false;
+    return true;
+  };
+
+  function areTodosCompleted() {
+    if (todos.find(todo => !todo.completed)) {
+      return false;
+    }
+
+    return true;
   }
 
   const handleDelete = () => setIsDeleteing(true);
@@ -88,9 +98,9 @@ export const App: React.FC = () => {
       if (todoOnServer.completed) {
         deleteTodo(todoOnServer.id)
           .then(() =>
-            setTodos([
-              ...todos.filter(todoFromArr => todoFromArr.completed === false),
-            ]),
+            setTodos(
+              todos.filter(todoFromArr => todoFromArr.completed === false),
+            ),
           )
           .catch(() => {
             setTodos([...todos, todoOnServer]);
@@ -161,13 +171,17 @@ export const App: React.FC = () => {
     setIsUpdateing(true);
     setId(updatedTodo.id);
 
+    const newTodo = { ...updatedTodo };
+
+    newTodo.completed = !newTodo.completed;
+
     updateTodoStatusOnServer(updatedTodo)
       .then(() => {
         setTodos(currentTodos => {
           const newTodos = [...currentTodos];
           const index = newTodos.findIndex(todo => todo.id === updatedTodo.id);
 
-          newTodos.splice(index, 1, updatedTodo);
+          newTodos.splice(index, 1, newTodo);
 
           return newTodos;
         });
@@ -202,7 +216,7 @@ export const App: React.FC = () => {
           <button
             type="button"
             className={classNames('todoapp__toggle-all', {
-              active: findActiveTodo(),
+              active: areTodosCompleted(),
             })}
             data-cy="ToggleAllButton"
           />
@@ -234,7 +248,7 @@ export const App: React.FC = () => {
         {todos.length > 0 && (
           <Footer
             activeTodos={activeTodos}
-            completedTodos={completedTodos}
+            completedTodos={completedTodos()}
             status={status}
             setStatus={handleSetStatus}
             clearCompleted={clearCompleted}

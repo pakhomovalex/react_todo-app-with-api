@@ -5,7 +5,7 @@ import { Status } from '../App';
 
 type Props = {
   activeTodos: Todo[];
-  completedTodos: Todo[];
+  completedTodos: boolean;
   status: Status;
   setStatus: (v: Status) => void;
   clearCompleted: () => void;
@@ -63,7 +63,7 @@ export const Footer: React.FC<Props> = ({
     <button
       type="button"
       className="todoapp__clear-completed"
-      disabled={!(completedTodos.length > 0)}
+      disabled={completedTodos}
       data-cy="ClearCompletedButton"
       onClick={() => {
         handleSetDelete();
