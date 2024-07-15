@@ -7,7 +7,7 @@ import {
   addTodo,
   deleteTodo,
   getTodos,
-  updateTodoStatusOnServer,
+  updateTodo,
 } from './api/todos';
 import { Todo } from './types/Todo';
 import classNames from 'classnames';
@@ -25,7 +25,7 @@ export const App: React.FC = () => {
   const [query, setQuery] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
   const [status, setStatus] = useState<Status>(Status.all);
-  const [id, setId] = useState<number>(-1);
+  const [id, setId] = useState<number>(1);
 
   const [hasError, setHasError] = useState<boolean>(false);
   const [titleError, setTitleError] = useState<boolean>(false);
@@ -38,6 +38,8 @@ export const App: React.FC = () => {
   const [isSubmiting, setIsSubmiting] = useState<boolean>(false);
   const [isDeleteing, setIsDeleteing] = useState<boolean>(false);
   const [isUpdateing, setIsUpdateing] = useState<boolean>(false);
+
+  const [editTodo, setEditTodo] = useState<boolean>(false);
 
   const ref = useRef<HTMLInputElement>(null);
 
@@ -72,8 +74,12 @@ export const App: React.FC = () => {
     return true;
   });
 
-  const activeTodos = todos.filter(todo => !todo.completed);
-  const completedTodos = () => {
+  const filterActiveTodos = todos.filter(todo => !todo.completed);
+  const findCompletedTodos = () => {
+    if (todos.length === 0) {
+      return false;
+    }
+
     if (todos.find(todo => todo.completed)) {
       return false;
     }
@@ -82,17 +88,15 @@ export const App: React.FC = () => {
   };
 
   function areTodosCompleted() {
-    if (todos.find(todo => !todo.completed)) {
-      return false;
-    }
-
-    return true;
+    return !!!todos.find(todo => !todo.completed);
   }
 
   const handleDelete = () => setIsDeleteing(true);
 
+  const handleIsUpdating = () => setIsUpdateing(prev => !prev);
+
   const clearCompleted = () => {
-    handleDelete();
+    setIsDeleteing(true);
 
     todos.forEach(todoOnServer => {
       if (todoOnServer.completed) {
@@ -117,7 +121,14 @@ export const App: React.FC = () => {
 
   const handleSetStatus = (newStatus: Status) => setStatus(newStatus);
 
-  const handleSetError = () => setHasError(false);
+  const handleSetError = () => setHasError(true);
+
+  const handleSetUpdateError = () => setUpdateError(true);
+
+  const handleSetEditTodo = (todoIdForEdit: number) => {
+    setEditTodo(prev => !prev);
+    setId(todoIdForEdit);
+  };
 
   const handleSetDelete = (todoId: number) => {
     setIsDeleteing(true);
@@ -175,7 +186,7 @@ export const App: React.FC = () => {
 
     newTodo.completed = !newTodo.completed;
 
-    updateTodoStatusOnServer(updatedTodo)
+    updateTodo(updatedTodo, { completed: !updatedTodo.completed })
       .then(() => {
         setTodos(currentTodos => {
           const newTodos = [...currentTodos];
@@ -192,6 +203,22 @@ export const App: React.FC = () => {
       })
       .finally(() => setIsUpdateing(false));
   }
+
+  const toggleAll = () => {
+    if (areTodosCompleted()) {
+      todos.forEach(todo => {
+        updateTodoStatus(todo);
+      });
+    } else {
+      todos.forEach(todo => {
+        if (todo.completed) {
+          return;
+        }
+
+        updateTodoStatus(todo);
+      });
+    }
+  };
 
   if (hasError) {
     setTimeout(() => setHasError(false), 3000);
@@ -213,13 +240,16 @@ export const App: React.FC = () => {
 
       <div className="todoapp__content">
         <header className="todoapp__header">
-          <button
-            type="button"
-            className={classNames('todoapp__toggle-all', {
-              active: areTodosCompleted(),
-            })}
-            data-cy="ToggleAllButton"
-          />
+          {todos.length > 0 && (
+            <button
+              type="button"
+              className={classNames('todoapp__toggle-all', {
+                active: areTodosCompleted(),
+              })}
+              data-cy="ToggleAllButton"
+              onClick={() => toggleAll()}
+            />
+          )}
 
           <form onSubmit={handleSubmit}>
             <input
@@ -237,18 +267,23 @@ export const App: React.FC = () => {
 
         <TodoList
           filteredTodos={filteredTodosByStatus}
+          editTodo={editTodo}
+          setEditTodo={handleSetEditTodo}
           tempTodo={tempTodo}
           isDeleteing={isDeleteing}
           isUpdating={isUpdateing}
           handleDelete={handleSetDelete}
-          todoForDelete={id}
+          handleUpdating={handleIsUpdating}
+          todoId={id}
           updateTodo={updateTodoStatus}
+          setError={handleSetError}
+          setUpdateError={handleSetUpdateError}
         />
 
         {todos.length > 0 && (
           <Footer
-            activeTodos={activeTodos}
-            completedTodos={completedTodos()}
+            activeTodos={filterActiveTodos}
+            completedTodos={findCompletedTodos()}
             status={status}
             setStatus={handleSetStatus}
             clearCompleted={clearCompleted}
