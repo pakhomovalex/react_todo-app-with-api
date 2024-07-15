@@ -16,6 +16,6 @@ export const deleteTodo = (id: number) => {
   return client.delete(`/todos/${id}`);
 };
 
-export const updateTodo = (todo: Todo, data: any) => {
+export const updateTodo = (todo: Todo, data: object) => {
   return client.patch(`/todos/${todo.id}`, data);
 };
