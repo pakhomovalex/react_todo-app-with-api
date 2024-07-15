@@ -4,21 +4,19 @@ import classNames from 'classnames';
 type Props = {
   hasError: boolean;
   setHasError: () => void;
-  titleError: boolean;
-  todosError: boolean;
-  addError: boolean;
-  deleteError: boolean;
-  updateError: boolean;
+  errors: {
+    titleError: boolean;
+    todosError: boolean;
+    addError: boolean;
+    deleteError: boolean;
+    updateError: boolean;
+  };
 };
 
 export const ErrorNotification: React.FC<Props> = ({
   hasError,
   setHasError,
-  titleError,
-  todosError,
-  addError,
-  deleteError,
-  updateError,
+  errors,
 }) => (
   <div
     data-cy="ErrorNotification"
@@ -33,31 +31,31 @@ export const ErrorNotification: React.FC<Props> = ({
       className="delete"
       onClick={setHasError}
     />
-    {todosError && (
+    {errors.todosError && (
       <>
         Unable to load todos
         <br />
       </>
     )}
-    {titleError && (
+    {errors.titleError && (
       <>
         Title should not be empty
         <br />
       </>
     )}
-    {addError && (
+    {errors.addError && (
       <>
         Unable to add a todo
         <br />
       </>
     )}
-    {deleteError && (
+    {errors.deleteError && (
       <>
         Unable to delete a todo
         <br />
       </>
     )}
-    {updateError && (
+    {errors.updateError && (
       <>
         Unable to update a todo
         <br />

@@ -19,58 +19,43 @@ export const Footer: React.FC<Props> = ({
   setStatus,
   clearCompleted,
   handleSetDelete,
-}) => (
-  <footer className="todoapp__footer" data-cy="Footer">
-    <span className="todo-count" data-cy="TodosCounter">
-      {activeTodos.length} items left
-    </span>
+}) => {
+  const statuses = Object.values(Status);
 
-    <nav className="filter" data-cy="Filter">
-      <a
-        href="#/"
-        className={classNames('filter__link', {
-          selected: status === Status.all,
-        })}
-        data-cy="FilterLinkAll"
-        onClick={() => setStatus(Status.all)}
+  return (
+    <footer className="todoapp__footer" data-cy="Footer">
+      <span className="todo-count" data-cy="TodosCounter">
+        {activeTodos.length} items left
+      </span>
+
+      <nav className="filter" data-cy="Filter">
+        {statuses.map(statusValue => (
+          <a
+            key={statusValue}
+            href={`#/${statusValue === 'all' ? '' : statusValue}`}
+            className={classNames('filter__link', {
+              selected: status === statusValue,
+            })}
+            data-cy={`FilterLink${statusValue.charAt(0).toUpperCase() + statusValue.slice(1)}`}
+            onClick={() => setStatus(statusValue)}
+          >
+            {statusValue.charAt(0).toUpperCase() + statusValue.slice(1)}
+          </a>
+        ))}
+      </nav>
+
+      <button
+        type="button"
+        className="todoapp__clear-completed"
+        disabled={completedTodos}
+        data-cy="ClearCompletedButton"
+        onClick={() => {
+          handleSetDelete();
+          clearCompleted();
+        }}
       >
-        All
-      </a>
-
-      <a
-        href="#/active"
-        className={classNames('filter__link', {
-          selected: status === Status.active,
-        })}
-        data-cy="FilterLinkActive"
-        onClick={() => setStatus(Status.active)}
-      >
-        Active
-      </a>
-
-      <a
-        href="#/completed"
-        className={classNames('filter__link', {
-          selected: status === Status.completed,
-        })}
-        data-cy="FilterLinkCompleted"
-        onClick={() => setStatus(Status.completed)}
-      >
-        Completed
-      </a>
-    </nav>
-
-    <button
-      type="button"
-      className="todoapp__clear-completed"
-      disabled={completedTodos}
-      data-cy="ClearCompletedButton"
-      onClick={() => {
-        handleSetDelete();
-        clearCompleted();
-      }}
-    >
-      Clear completed
-    </button>
-  </footer>
-);
+        Clear completed
+      </button>
+    </footer>
+  );
+};

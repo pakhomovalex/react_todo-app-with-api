@@ -28,11 +28,15 @@ export const App: React.FC = () => {
   const [id, setId] = useState<number>(1);
 
   const [hasError, setHasError] = useState<boolean>(false);
-  const [titleError, setTitleError] = useState<boolean>(false);
-  const [todosError, setTodosError] = useState<boolean>(false);
-  const [addError, setAddError] = useState<boolean>(false);
-  const [deleteError, setDeleteError] = useState<boolean>(false);
-  const [updateError, setUpdateError] = useState<boolean>(false);
+  // const [updateError, setUpdateError] = useState<boolean>(false);
+
+  const [errors, setErrors] = useState({
+    titleError: false,
+    todosError: false,
+    addError: false,
+    deleteError: false,
+    updateError: false,
+  });
 
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [isSubmiting, setIsSubmiting] = useState<boolean>(false);
@@ -47,10 +51,13 @@ export const App: React.FC = () => {
     getTodos()
       .then(setTodos)
       .catch(() => {
-        setTodosError(true);
+        setErrors({
+          ...errors,
+          todosError: true,
+        });
         setHasError(true);
       });
-  }, []);
+  }, [errors]);
 
   useEffect(() => {
     if (ref.current) {
@@ -110,7 +117,10 @@ export const App: React.FC = () => {
             setTodos([...todos, todoOnServer]);
 
             setHasError(true);
-            setDeleteError(true);
+            setErrors({
+              ...errors,
+              deleteError: true,
+            });
           })
           .finally(() => setIsDeleteing(false));
       }
@@ -123,7 +133,11 @@ export const App: React.FC = () => {
 
   const handleSetError = () => setHasError(true);
 
-  const handleSetUpdateError = () => setUpdateError(true);
+  const handleSetUpdateError = () =>
+    setErrors({
+      ...errors,
+      updateError: true,
+    });
 
   const handleSetEditTodo = (todoIdForEdit: number) => {
     setEditTodo(prev => !prev);
@@ -139,8 +153,14 @@ export const App: React.FC = () => {
     event.preventDefault();
     setIsSubmiting(true);
     setHasError(false);
-    setTitleError(false);
-    setAddError(false);
+    setErrors({
+      ...errors,
+      titleError: false,
+    });
+    setErrors({
+      ...errors,
+      addError: false,
+    });
 
     const todo = {
       id: todos.length,
@@ -151,7 +171,10 @@ export const App: React.FC = () => {
 
     if (!query || /^\s+$/.test(query)) {
       setHasError(true);
-      setTitleError(true);
+      setErrors({
+        ...errors,
+        titleError: true,
+      });
       setIsSubmiting(false);
 
       return;
@@ -167,7 +190,10 @@ export const App: React.FC = () => {
       .catch(() => {
         setHasError(true);
         setTempTodo(null);
-        setAddError(true);
+        setErrors({
+          ...errors,
+          addError: true,
+        });
       })
       .finally(() => {
         return setIsSubmiting(false);
@@ -178,7 +204,10 @@ export const App: React.FC = () => {
   };
 
   function updateTodoStatus(updatedTodo: Todo) {
-    setUpdateError(false);
+    setErrors({
+      ...errors,
+      updateError: false,
+    });
     setIsUpdateing(true);
     setId(updatedTodo.id);
 
@@ -199,7 +228,10 @@ export const App: React.FC = () => {
       })
       .catch(() => {
         setHasError(true);
-        setUpdateError(true);
+        setErrors({
+          ...errors,
+          updateError: true,
+        });
       })
       .finally(() => setIsUpdateing(false));
   }
@@ -228,11 +260,17 @@ export const App: React.FC = () => {
     deleteTodo(id)
       .then(() => setTodos(todos.filter(todo => todo.id !== id)))
       .catch(() => {
-        setDeleteError(true);
+        setErrors({
+          ...errors,
+          deleteError: true,
+        });
         setHasError(true);
       })
       .finally(() => setIsDeleteing(false));
   }
+
+  const handleSetQuery = (event: React.ChangeEvent<HTMLInputElement>) =>
+    setQuery(event.target.value);
 
   return (
     <div className="todoapp">
@@ -260,25 +298,27 @@ export const App: React.FC = () => {
               placeholder="What needs to be done?"
               disabled={isSubmiting}
               value={query}
-              onChange={event => setQuery(event.target.value)}
+              onChange={handleSetQuery}
             />
           </form>
         </header>
 
-        <TodoList
-          filteredTodos={filteredTodosByStatus}
-          editTodo={editTodo}
-          setEditTodo={handleSetEditTodo}
-          tempTodo={tempTodo}
-          isDeleteing={isDeleteing}
-          isUpdating={isUpdateing}
-          handleDelete={handleSetDelete}
-          handleUpdating={handleIsUpdating}
-          todoId={id}
-          updateTodo={updateTodoStatus}
-          setError={handleSetError}
-          setUpdateError={handleSetUpdateError}
-        />
+        {todos.length > 0 && (
+          <TodoList
+            filteredTodos={filteredTodosByStatus}
+            editTodo={editTodo}
+            setEditTodo={handleSetEditTodo}
+            tempTodo={tempTodo}
+            isDeleteing={isDeleteing}
+            isUpdating={isUpdateing}
+            handleDelete={handleSetDelete}
+            handleUpdating={handleIsUpdating}
+            todoId={id}
+            updateTodo={updateTodoStatus}
+            setError={handleSetError}
+            setUpdateError={handleSetUpdateError}
+          />
+        )}
 
         {todos.length > 0 && (
           <Footer
@@ -295,11 +335,7 @@ export const App: React.FC = () => {
       <ErrorNotification
         hasError={hasError}
         setHasError={handleSetError}
-        titleError={titleError}
-        todosError={todosError}
-        addError={addError}
-        deleteError={deleteError}
-        updateError={updateError}
+        errors={errors}
       />
     </div>
   );
