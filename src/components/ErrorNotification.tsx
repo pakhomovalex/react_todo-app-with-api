@@ -5,11 +5,11 @@ type Props = {
   hasError: boolean;
   setHasError: () => void;
   errors: {
-    titleError: boolean;
-    todosError: boolean;
-    addError: boolean;
-    deleteError: boolean;
-    updateError: boolean;
+    titleError: string;
+    todosError: string;
+    addError: string;
+    deleteError: string;
+    updateError: string;
   };
 };
 
@@ -31,35 +31,13 @@ export const ErrorNotification: React.FC<Props> = ({
       className="delete"
       onClick={setHasError}
     />
-    {errors.todosError && (
-      <>
-        Unable to load todos
-        <br />
-      </>
-    )}
-    {errors.titleError && (
-      <>
-        Title should not be empty
-        <br />
-      </>
-    )}
-    {errors.addError && (
-      <>
-        Unable to add a todo
-        <br />
-      </>
-    )}
-    {errors.deleteError && (
-      <>
-        Unable to delete a todo
-        <br />
-      </>
-    )}
-    {errors.updateError && (
-      <>
-        Unable to update a todo
-        <br />
-      </>
-    )}
+    {Object.values(errors)
+      .filter(err => err)
+      .map(error => (
+        <React.Fragment key={error}>
+          {error}
+          <br />
+        </React.Fragment>
+      ))}
   </div>
 );

@@ -28,14 +28,13 @@ export const App: React.FC = () => {
   const [id, setId] = useState<number>(1);
 
   const [hasError, setHasError] = useState<boolean>(false);
-  // const [updateError, setUpdateError] = useState<boolean>(false);
 
   const [errors, setErrors] = useState({
-    titleError: false,
-    todosError: false,
-    addError: false,
-    deleteError: false,
-    updateError: false,
+    titleError: '',
+    todosError: '',
+    addError: '',
+    deleteError: '',
+    updateError: '',
   });
 
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
@@ -53,7 +52,7 @@ export const App: React.FC = () => {
       .catch(() => {
         setErrors({
           ...errors,
-          todosError: true,
+          todosError: 'Unable to load todos',
         });
         setHasError(true);
       });
@@ -119,7 +118,7 @@ export const App: React.FC = () => {
             setHasError(true);
             setErrors({
               ...errors,
-              deleteError: true,
+              deleteError: 'Unable to delete a todo',
             });
           })
           .finally(() => setIsDeleteing(false));
@@ -136,7 +135,7 @@ export const App: React.FC = () => {
   const handleSetUpdateError = () =>
     setErrors({
       ...errors,
-      updateError: true,
+      updateError: 'Unable to update a todo',
     });
 
   const handleSetEditTodo = (todoIdForEdit: number) => {
@@ -155,11 +154,11 @@ export const App: React.FC = () => {
     setHasError(false);
     setErrors({
       ...errors,
-      titleError: false,
+      titleError: '',
     });
     setErrors({
       ...errors,
-      addError: false,
+      addError: '',
     });
 
     const todo = {
@@ -173,7 +172,7 @@ export const App: React.FC = () => {
       setHasError(true);
       setErrors({
         ...errors,
-        titleError: true,
+        titleError: 'Title should not be empty',
       });
       setIsSubmiting(false);
 
@@ -192,7 +191,7 @@ export const App: React.FC = () => {
         setTempTodo(null);
         setErrors({
           ...errors,
-          addError: true,
+          addError: 'Unable to add a todo',
         });
       })
       .finally(() => {
@@ -206,7 +205,7 @@ export const App: React.FC = () => {
   function updateTodoStatus(updatedTodo: Todo) {
     setErrors({
       ...errors,
-      updateError: false,
+      updateError: 'Unable to update a todo',
     });
     setIsUpdateing(true);
     setId(updatedTodo.id);
@@ -230,7 +229,7 @@ export const App: React.FC = () => {
         setHasError(true);
         setErrors({
           ...errors,
-          updateError: true,
+          updateError: 'Unable to update a todo',
         });
       })
       .finally(() => setIsUpdateing(false));
@@ -262,7 +261,7 @@ export const App: React.FC = () => {
       .catch(() => {
         setErrors({
           ...errors,
-          deleteError: true,
+          deleteError: 'Unable to delete a todo',
         });
         setHasError(true);
       })
@@ -285,7 +284,7 @@ export const App: React.FC = () => {
                 active: areTodosCompleted(),
               })}
               data-cy="ToggleAllButton"
-              onClick={() => toggleAll()}
+              onClick={toggleAll}
             />
           )}
 
