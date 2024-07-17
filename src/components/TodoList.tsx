@@ -6,6 +6,7 @@ import { Method } from '../App';
 type Props = {
   editTodo: boolean;
   setEditTodo: (id: number) => void;
+  setRemoveEditTodo: () => void;
   filteredTodos: Todo[];
   tempTodo: Todo | null;
   loadingForTodo: number[];
@@ -20,6 +21,7 @@ type Props = {
 export const TodoList: React.FC<Props> = ({
   editTodo,
   setEditTodo,
+  setRemoveEditTodo,
   filteredTodos,
   tempTodo,
   loadingForTodo,
@@ -36,6 +38,7 @@ export const TodoList: React.FC<Props> = ({
         todo={todo}
         editTodo={editTodo}
         setEditTodo={setEditTodo}
+        setRemoveEditTodo={setRemoveEditTodo}
         key={todo.id}
         loadingForTodo={loadingForTodo}
         handleDelete={handleDelete}
@@ -50,6 +53,7 @@ export const TodoList: React.FC<Props> = ({
       <TodoItem
         todo={tempTodo}
         isTempTodo
+        setRemoveEditTodo={setRemoveEditTodo}
         handleDelete={handleDelete}
         handleUpdating={handleUpdating}
         updateTodoStatus={updateTodo}

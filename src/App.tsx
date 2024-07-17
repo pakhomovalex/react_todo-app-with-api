@@ -100,7 +100,7 @@ export const App: React.FC = () => {
   };
 
   function areTodosCompleted() {
-    return !!!todos.find(todo => !todo.completed);
+    return !todos.find(todo => !todo.completed);
   }
 
   const handleDelete = () => setIsDeleteing(true);
@@ -157,9 +157,11 @@ export const App: React.FC = () => {
     });
 
   const handleSetEditTodo = (todoIdForEdit: number) => {
-    setEditTodo(prev => !prev);
+    setEditTodo(true);
     setId(todoIdForEdit);
   };
+
+  const handleFalseEditTodo = () => setEditTodo(false);
 
   const handleSetDelete = (todoId: number) => {
     setIsDeleteing(true);
@@ -337,6 +339,7 @@ export const App: React.FC = () => {
             setEditTodo={handleSetEditTodo}
             tempTodo={tempTodo}
             loadingForTodo={loadingForTodo}
+            setRemoveEditTodo={handleFalseEditTodo}
             handleDelete={handleSetDelete}
             handleUpdating={handleSetLoading}
             todoId={id}

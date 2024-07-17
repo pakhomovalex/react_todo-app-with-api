@@ -9,6 +9,7 @@ type Props = {
   todo: Todo;
   editTodo?: boolean;
   setEditTodo: (id: number) => void;
+  setRemoveEditTodo: () => void;
   isTempTodo?: boolean;
   loadingForTodo?: number[];
   handleDelete: (id: number) => void;
@@ -23,6 +24,7 @@ export const TodoItem: React.FC<Props> = ({
   todo,
   editTodo,
   setEditTodo,
+  setRemoveEditTodo,
   isTempTodo = false,
   loadingForTodo,
   handleDelete,
@@ -51,14 +53,13 @@ export const TodoItem: React.FC<Props> = ({
     }
 
     if (newTitle === currentTitle) {
-      setEditTodo(0);
+      setRemoveEditTodo();
     }
 
     handleUpdating(todo, Method.add);
 
     updateTodo(todo, { title: newTitle })
       .then(() => {
-        setEditTodo(0);
         currentTitle = newTitle;
       })
       .catch(() => {
@@ -67,7 +68,7 @@ export const TodoItem: React.FC<Props> = ({
       })
       .finally(() => {
         handleUpdating(todo, Method.delete);
-        setEditTodo(0);
+        setRemoveEditTodo();
       });
   }
 
