@@ -21,6 +21,11 @@ export enum Status {
   completed = 'completed',
 }
 
+export enum Method {
+  add = 'add',
+  delete = 'delete',
+}
+
 export const App: React.FC = () => {
   const [query, setQuery] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -40,7 +45,8 @@ export const App: React.FC = () => {
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [isSubmiting, setIsSubmiting] = useState<boolean>(false);
   const [isDeleteing, setIsDeleteing] = useState<boolean>(false);
-  const [isUpdateing, setIsUpdateing] = useState<boolean>(false);
+
+  const [loadingForTodo, setLoadingForTodo] = useState<number[]>([]);
 
   const [editTodo, setEditTodo] = useState<boolean>(false);
 
@@ -62,7 +68,7 @@ export const App: React.FC = () => {
     if (ref.current) {
       ref.current.focus();
     }
-  }, [isSubmiting, isDeleteing]);
+  }, [isSubmiting, isDeleteing, loadingForTodo.length]);
 
   if (!USER_ID) {
     return <UserWarning />;
@@ -99,13 +105,22 @@ export const App: React.FC = () => {
 
   const handleDelete = () => setIsDeleteing(true);
 
-  const handleIsUpdating = () => setIsUpdateing(prev => !prev);
+  const handleSetLoading = (todo: Todo, method: Method) => {
+    switch (method) {
+      case 'add':
+        return setLoadingForTodo([todo.id]);
+      case 'delete':
+        return setLoadingForTodo([]);
+    }
+  };
 
   const clearCompleted = () => {
     setIsDeleteing(true);
 
     todos.forEach(todoOnServer => {
       if (todoOnServer.completed) {
+        setLoadingForTodo(prev => [...prev, todoOnServer.id]);
+
         deleteTodo(todoOnServer.id)
           .then(() =>
             setTodos(
@@ -121,7 +136,10 @@ export const App: React.FC = () => {
               deleteError: 'Unable to delete a todo',
             });
           })
-          .finally(() => setIsDeleteing(false));
+          .finally(() => {
+            setIsDeleteing(false);
+            setLoadingForTodo([]);
+          });
       }
     });
   };
@@ -145,6 +163,7 @@ export const App: React.FC = () => {
 
   const handleSetDelete = (todoId: number) => {
     setIsDeleteing(true);
+    setLoadingForTodo([...loadingForTodo, todoId]);
     setId(todoId);
   };
 
@@ -207,7 +226,9 @@ export const App: React.FC = () => {
       ...errors,
       updateError: 'Unable to update a todo',
     });
-    setIsUpdateing(true);
+
+    setLoadingForTodo(prev => [...prev, updatedTodo.id]);
+
     setId(updatedTodo.id);
 
     const newTodo = { ...updatedTodo };
@@ -232,7 +253,11 @@ export const App: React.FC = () => {
           updateError: 'Unable to update a todo',
         });
       })
-      .finally(() => setIsUpdateing(false));
+      .finally(() => {
+        setLoadingForTodo(
+          loadingForTodo.filter(todoId => todoId !== updatedTodo.id),
+        );
+      });
   }
 
   const toggleAll = () => {
@@ -255,7 +280,7 @@ export const App: React.FC = () => {
     setTimeout(() => setHasError(false), 3000);
   }
 
-  if (isDeleteing) {
+  if (isDeleteing && loadingForTodo.length > 0) {
     deleteTodo(id)
       .then(() => setTodos(todos.filter(todo => todo.id !== id)))
       .catch(() => {
@@ -265,7 +290,10 @@ export const App: React.FC = () => {
         });
         setHasError(true);
       })
-      .finally(() => setIsDeleteing(false));
+      .finally(() => {
+        setLoadingForTodo([]);
+        setIsDeleteing(false);
+      });
   }
 
   const handleSetQuery = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -308,10 +336,9 @@ export const App: React.FC = () => {
             editTodo={editTodo}
             setEditTodo={handleSetEditTodo}
             tempTodo={tempTodo}
-            isDeleteing={isDeleteing}
-            isUpdating={isUpdateing}
+            loadingForTodo={loadingForTodo}
             handleDelete={handleSetDelete}
-            handleUpdating={handleIsUpdating}
+            handleUpdating={handleSetLoading}
             todoId={id}
             updateTodo={updateTodoStatus}
             setError={handleSetError}

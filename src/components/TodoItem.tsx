@@ -3,16 +3,16 @@ import { useEffect } from 'react';
 import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 import { updateTodo } from '../api/todos';
+import { Method } from '../App';
 
 type Props = {
   todo: Todo;
   editTodo?: boolean;
   setEditTodo: (id: number) => void;
   isTempTodo?: boolean;
-  isDeleteing?: boolean;
-  isUpdating?: boolean;
+  loadingForTodo?: number[];
   handleDelete: (id: number) => void;
-  handleUpdating: () => void;
+  handleUpdating: (todo: Todo, method: Method) => void;
   todoId?: number;
   updateTodoStatus: (todo: Todo) => void;
   setError: () => void;
@@ -24,8 +24,7 @@ export const TodoItem: React.FC<Props> = ({
   editTodo,
   setEditTodo,
   isTempTodo = false,
-  isDeleteing = false,
-  isUpdating,
+  loadingForTodo,
   handleDelete,
   handleUpdating,
   todoId,
@@ -55,7 +54,7 @@ export const TodoItem: React.FC<Props> = ({
       setEditTodo(0);
     }
 
-    handleUpdating();
+    handleUpdating(todo, Method.add);
 
     updateTodo(todo, { title: newTitle })
       .then(() => {
@@ -67,7 +66,8 @@ export const TodoItem: React.FC<Props> = ({
         setUpdateError();
       })
       .finally(() => {
-        handleUpdating();
+        handleUpdating(todo, Method.delete);
+        setEditTodo(0);
       });
   }
 
@@ -143,10 +143,7 @@ export const TodoItem: React.FC<Props> = ({
       <div
         data-cy="TodoLoader"
         className={classNames('modal overlay', {
-          'is-active':
-            isTempTodo ||
-            (isDeleteing && todoId === id) ||
-            (isUpdating && todoId === id),
+          'is-active': isTempTodo || loadingForTodo?.includes(id),
         })}
       >
         <div className="modal-background has-background-white-ter" />
